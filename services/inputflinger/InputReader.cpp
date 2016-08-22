@@ -1333,6 +1333,41 @@ void CursorMotionAccumulator::finishSync() {
     clearRelativeAxes();
 }
 
+// --- CursorPositionAccumulator ---
+
+CursorPositionAccumulator::CursorPositionAccumulator() {
+    clearPosition();
+}
+
+void CursorPositionAccumulator::reset(InputDevice* device) {
+    clearPosition();
+}
+
+void CursorPositionAccumulator::clearPosition() {
+    mX = 0;
+    mY = 0;
+}
+
+void CursorPositionAccumulator::process(const RawEvent* rawEvent) {
+    ALOGI("event code=%d type=%d value=%d",
+          rawEvent->code, rawEvent->type, rawEvent->value);
+
+    if (rawEvent->type == EV_ABS) {
+        switch (rawEvent->code) {
+        case ABS_X:
+            mX = rawEvent->value;
+            break;
+        case ABS_Y:
+            mY = rawEvent->value;
+            break;
+        }
+    }
+}
+
+void CursorPositionAccumulator::finishSync() {
+    clearPosition();
+}
+
 
 // --- CursorScrollAccumulator ---
 
@@ -2571,6 +2606,7 @@ void CursorInputMapper::reset(nsecs_t when) {
 
     mCursorButtonAccumulator.reset(getDevice());
     mCursorMotionAccumulator.reset(getDevice());
+    mCursorPositionAccumulator.reset(getDevice());
     mCursorScrollAccumulator.reset(getDevice());
 
     InputMapper::reset(when);
@@ -2579,6 +2615,7 @@ void CursorInputMapper::reset(nsecs_t when) {
 void CursorInputMapper::process(const RawEvent* rawEvent) {
     mCursorButtonAccumulator.process(rawEvent);
     mCursorMotionAccumulator.process(rawEvent);
+    mCursorPositionAccumulator.process(rawEvent);
     mCursorScrollAccumulator.process(rawEvent);
 
     if (rawEvent->type == EV_SYN && rawEvent->code == SYN_REPORT) {
@@ -2638,8 +2675,10 @@ void CursorInputMapper::sync(nsecs_t when) {
     int32_t displayId;
     if (mPointerController != NULL) {
         if (moved || scrolled || buttonsChanged) {
+#if 0
             mPointerController->setPresentation(
                     PointerControllerInterface::PRESENTATION_POINTER);
+#endif
 
             if (moved) {
                 mPointerController->move(deltaX, deltaY);
@@ -2651,6 +2690,9 @@ void CursorInputMapper::sync(nsecs_t when) {
 
             mPointerController->unfade(PointerControllerInterface::TRANSITION_IMMEDIATE);
         }
+
+        mPointerController->setPosition(mCursorPositionAccumulator.getX(),
+                                        mCursorPositionAccumulator.getY());
 
         float x, y;
         mPointerController->getPosition(&x, &y);
