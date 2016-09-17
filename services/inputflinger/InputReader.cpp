@@ -1348,9 +1348,6 @@ void CursorPositionAccumulator::clearPosition() {
 }
 
 void CursorPositionAccumulator::process(const RawEvent* rawEvent) {
-    ALOGI("event code=%d type=%d value=%d",
-          rawEvent->code, rawEvent->type, rawEvent->value);
-
     if (rawEvent->type == EV_ABS) {
         switch (rawEvent->code) {
         case ABS_X:
