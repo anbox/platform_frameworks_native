@@ -784,6 +784,7 @@ void Layer::setPerFrameData(const sp<const DisplayDevice>& hw,
     Region visible = tr.transform(visibleRegion.intersect(hw->getViewport()));
     layer.setVisibleRegionScreen(visible);
     layer.setSurfaceDamage(surfaceDamageRegion);
+    layer.setName(mName);
     mIsGlesComposition = (layer.getCompositionType() == HWC_FRAMEBUFFER);
 
     if (mSidebandStream.get()) {

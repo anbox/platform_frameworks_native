@@ -1095,6 +1095,9 @@ public:
     virtual void onDisplayed() {
         getLayer()->acquireFenceFd = -1;
     }
+    virtual void setName(String8 &name) {
+        strncpy(getLayer()->name, name.string(), HWC_LAYER_NAME_MAX_LENGTH);
+    }
 
 protected:
     // Pointers to the vectors of Region backing-memory held in DisplayData.
