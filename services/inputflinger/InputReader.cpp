@@ -2671,10 +2671,8 @@ void CursorInputMapper::sync(nsecs_t when) {
     int32_t displayId;
     if (mPointerController != NULL) {
         if (moved || scrolled || buttonsChanged) {
-#if 0
             mPointerController->setPresentation(
                     PointerControllerInterface::PRESENTATION_POINTER);
-#endif
 
 #if 0
             if (moved) {
