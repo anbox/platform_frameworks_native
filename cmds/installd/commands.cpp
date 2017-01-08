@@ -99,6 +99,7 @@ static std::string create_primary_profile(const std::string& profile_dir) {
     return StringPrintf("%s/%s", profile_dir.c_str(), PRIMARY_PROFILE_NAME);
 }
 
+#if 0
 /**
  * Perform restorecon of the given path, but only perform recursive restorecon
  * if the label of that top-level file actually changed.  This can save us
@@ -150,6 +151,7 @@ static int restorecon_app_data_lazy(const std::string& parent, const char* name,
         uid_t uid) {
     return restorecon_app_data_lazy(StringPrintf("%s/%s", parent.c_str(), name), seinfo, uid);
 }
+#endif
 
 static int prepare_app_dir(const std::string& path, mode_t target_mode, uid_t uid) {
     if (fs_prepare_dir_strict(path.c_str(), target_mode, uid, uid) != 0) {
@@ -166,6 +168,7 @@ static int prepare_app_dir(const std::string& parent, const char* name, mode_t t
 
 int create_app_data(const char *uuid, const char *pkgname, userid_t userid, int flags,
         appid_t appid, const char* seinfo, int target_sdk_version) {
+    (void) seinfo;
     uid_t uid = multiuser_get_uid(userid, appid);
     mode_t target_mode = target_sdk_version >= MIN_RESTRICTED_HOME_SDK_VERSION ? 0700 : 0751;
     if (flags & FLAG_STORAGE_CE) {
@@ -176,12 +179,14 @@ int create_app_data(const char *uuid, const char *pkgname, userid_t userid, int 
             return -1;
         }
 
+#if 0
         // Consider restorecon over contents if label changed
         if (restorecon_app_data_lazy(path, seinfo, uid) ||
                 restorecon_app_data_lazy(path, "cache", seinfo, uid) ||
                 restorecon_app_data_lazy(path, "code_cache", seinfo, uid)) {
             return -1;
         }
+#endif
 
         // Remember inode numbers of cache directories so that we can clear
         // contents while CE storage is locked
@@ -197,10 +202,12 @@ int create_app_data(const char *uuid, const char *pkgname, userid_t userid, int 
             return 0;
         }
 
+#if 0
         // Consider restorecon over contents if label changed
         if (restorecon_app_data_lazy(path, seinfo, uid)) {
             return -1;
         }
+#endif
 
         if (property_get_bool("dalvik.vm.usejitprofiles")) {
             const std::string profile_path = create_data_user_profile_package_path(userid, pkgname);
@@ -421,6 +428,7 @@ int destroy_app_data(const char *uuid, const char *pkgname, userid_t userid, int
 
 int move_complete_app(const char *from_uuid, const char *to_uuid, const char *package_name,
         const char *data_app_name, appid_t appid, const char* seinfo, int target_sdk_version) {
+    (void) seinfo;
     std::vector<userid_t> users = get_known_users(from_uuid);
 
     // Copy app
